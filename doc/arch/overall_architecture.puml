@@ -1,0 +1,26 @@
+@startuml
+title Overall Architecture - Node Diagram
+
+' Nodes
+node "Note 20\n(openclaw Gateway, Local Server)" as Note20
+cloud "Gemini API\n(AI Service)" as Gemini
+cloud "Brave Search\n(Web Search API)" as Brave
+cloud "Google Chat\n(Channel - User Input)" as GoogleChat
+cloud "Notion API\n(Storage)" as Notion
+
+' Relationships
+Note20 --> Gemini : Call AI Features
+Note20 --> Brave : Request Internet Search
+GoogleChat --> Note20 : Receive User Input
+Note20 --> Notion : Save Data (Notion API)
+
+' Additional notes
+note right of Note20
+  - Install openclaw on Note 20 (mobile phone)
+  - AI Processing via Gemini API
+  - Web Search via Brave Search
+  - Channel Input/Output via Google Chat
+  - Data Storage via Notion API
+end note
+
+@enduml
