@@ -1,0 +1,37 @@
+{
+  "name": "knowledge-agent",
+  "version": "1.0.0",
+  "description": "Notion 기반의 지능형 독서 기록 및 관리 스킬 (Brave Search & Gemini 활용)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "openclaw",
+    "skill",
+    "notion",
+    "gemini",
+    "book-management",
+    "brave-search"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "@google/generative-ai": "^0.2.1",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "clawdbot": {
+    "emoji": "📚",
+    "requires": {
+      "services": [
+        "brave-search",
+        "gemini-api",
+        "notion-api"
+      ]
+    }
+  }
+}
+

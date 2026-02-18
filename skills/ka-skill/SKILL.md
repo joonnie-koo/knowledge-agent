@@ -1,28 +1,58 @@
 ---
-name: ka-skill
-description: AI-powered knowledge management system. Search books, save to Notion, get recommendations, and record reviews via Telegram.
-homepage: https://github.com/yourusername/knowledge-agent
-metadata: {"clawdbot":{"emoji":"📚"}}
+name: knowledge-agent
+description: Notion 기반의 지능형 독서 기록 및 관리 스킬. gog CLI 스타일의 인터페이스를 지향하며 Brave Search와 Gemini를 활용한 자동화 워크플로우를 제공합니다.
+metadata: {"clawdbot":{"emoji":"📚","requires":{"services":["brave-search", "gemini-api", "notion-api"]}}}
 ---
 
-# knowledge-agent
+# 📚 Knowledge Agent: Book Management
 
-Intelligent knowledge management through AI. Store and organize books, articles, and papers with automatic metadata enrichment.
+이 스킬은 사용자가 자연어로 독서 기록을 관리하고, 외부 API를 통해 도서 정보를 수집하며, AI 분석을 통해 독후감 기록 및 도서 추천을 수행하는 기능을 제공합니다. 모든 데이터는 사용자의 Notion Database에 구조화되어 저장됩니다.
 
-Setup (once)
-- Set environment variables for API keys:
-  - `GEMINI_API_KEY` - Google Gemini API key
-  - `BRAVE_SEARCH_API_KEY` - Brave Search API key
-  - `NOTION_API_KEY` - Notion integration token
-  - `GOOGLE_CHAT_WEBHOOK_URL` - Google Chat webhook URL
+## 1. 도서 정보 자동 수집 (ISBN -> Notion)
+사용자가 ISBN을 입력하면 도서 정보를 검색하여 Notion에 저장하거나 읽은 횟수를 업데이트합니다.
 
-Common commands
-- Search book info: `ka search-book --title "Book Title"`
-- Save to Notion: `ka save --title "Title" --author "Author"`
-- Get recommendations: `ka recommend --count 5`
-- Record review: `ka review --title "Book Title" --content "My thoughts..."`
+**워크플로우:**
+- **Step 1 (입력)**: 사용자가 Telegram 등을 통해 ISBN 입력.
+- **Step 2 (검색)**: Brave Search API로 제목, 저자, 출판사, 표지 이미지 등 메타데이터 검색.
+- **Step 3 (정제)**: Gemini AI가 검색 결과를 정제하여 Notion 속성에 맞는 데이터 생성.
+- **Step 4 (저장)**: Notion DB에 저장. 기존 ISBN 존재 시 `read_count`를 1 증가시키고 `saved_at` 업데이트.
 
-Notes
-- All API keys must be configured before first use
-- Supports books, articles, and papers (extensible)
-- Google Chat is the primary input/output channel
+**저장 데이터 구조:**
+- `isbn`, `title`, `author`, `publisher`, `status` (unread/reading/completed), `read_count`, `cover_image_url` 등
+
+## 2. 독후감 기록 및 AI 분석
+책 제목으로 도서를 특정하여 독후감을 작성하고 AI 감정 분석 결과를 함께 저장합니다.
+
+**워크플로우:**
+- **Step 1 (검색)**: 사용자가 입력한 제목으로 Notion DB 내 도서 검색. 중복 시 ISBN으로 최종 선택 요청.
+- **Step 2 (분석)**: Gemini AI가 독후감 본문을 분석하여 감정(긍정/부정/중립) 및 주요 키워드 추출.
+- **Step 3 (기록)**: 분석 데이터와 함께 별점, 작성 날짜를 포함하여 Notion의 `reviews` 항목에 기록.
+
+## 3. 지능형 도서 추천
+사용자의 읽기 이력과 키워드 데이터를 바탕으로 맞춤형 도서를 추천합니다.
+
+**추천 방식:**
+- **특정 도서 기반**: 대상 도서의 키워드(예: #철학)와 유사도가 높은 도서 추천.
+- **취향 프로필 기반**: 모든 완독 도서의 키워드 빈도와 평점을 분석하여 읽지 않은 도서 중 추천 사유와 함께 제안.
+
+## 4. 주제별 도서 검색 (Top 3)
+특정 주제나 장르에 대해 외부 검색을 수행하고 최적의 도서 3권을 제안합니다.
+
+**워크플로우:**
+- **Step 1 (요청)**: "판타지 소설 추천해줘" 등 주제 키워드 수신.
+- **Step 2 (필터링)**: Brave Search 결과 중 Gemini가 인기도와 유사도를 기준으로 상위 3개 선별.
+- **Step 3 (연동)**: 검색 결과에서 즉시 Notion에 '관심 도서'로 저장 가능.
+
+## 5. 관심 도서 및 즐겨찾기 관리
+나중에 읽고 싶은 책을 태그 및 우선순위와 함께 관리합니다.
+
+**주요 기능:**
+- **즐겨찾기**: 특정 도서에 `is_favorite: true` 설정 및 개인 메모 추가.
+- **태그 필터링**: #판타지, #경제 등 태그 기반으로 즐겨찾기 목록 조회.
+- **우선순위 설정**: 읽고 싶은 순서에 따라 리스트 정렬 및 브리핑 제공.
+
+---
+
+## 🛠️ Notes
+- **CLI 스타일 활용**: `gog` CLI의 철학을 계승하여 스크립트 실행 시 `--json` 및 `--no-input` 옵션을 선호합니다.
+- **에러 처리**: 검색 결과가 없거나 API 오류 발생 시 사용자에게 다시 입력을 제안합니다.
